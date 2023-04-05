@@ -35,7 +35,9 @@ from parlai.core.params import ParlaiParser
 DEFAULT_INPUT_PATH = f"./projects/roscoe/roscoe_data/generated/"
 DEFAULT_OUTPUT_PATH = f"./projects/roscoe/scores/"
 
-DATASETS = ["drop", "esnli", "cosmos", "gsm8k", "semeval"]
+# DATASETS = ["drop", "esnli", "cosmos", "gsm8k", "semeval"]
+DATASETS = ["snli"]
+
 
 
 class ReasoningSteps(Chain):
@@ -107,6 +109,46 @@ class ReasoningEvaluator(Evaluator):
                         + jline["explanation_3"]
                     )
                     refs.append(r_chain)
+        super().set_hypos(hypothesises)
+        super().set_context(contexts)
+        super().set_references(refs)
+
+
+    def update_evaluator_custom(self, in_file: str):
+        hypothesises = []
+        contexts = []
+        refs = []
+        with open(in_file) as _f:
+            data = json.load(_f)
+            if "causal" in in_file:
+                for d in data:
+                    context = ReasoningSteps(line=d["Sentence1"]+" "+d["Sentence2"]+" "+d["Sentence3"]+" "+d['Sentence4'])
+                    for _d in d['cot_prediction']:
+                        h_chain = ReasoningSteps(line=_d["explanation"])
+                        hypothesises.append(h_chain)
+                        contexts.append(context)
+            elif "abductive" in in_file:
+                for d in data:
+                    context = ReasoningSteps(line=d["past_observation"]+" "+d["future_observation"])
+                    for _d in d['cot_prediction']:
+                        h_chain = ReasoningSteps(line=_d["explanation"])
+                        hypothesises.append(h_chain)
+                        contexts.append(context)
+            elif "snli" in in_file:
+                for d in data:
+                    context = ReasoningSteps(line=d["premise"]+" "+d["hypothesis"])
+                    keys = list(d.keys())
+                    for ans,_d in d['strengthener_prediction'].items():
+                        for cot in _d["cot"]:
+                            h_chain = ReasoningSteps(line=cot["explanation"])
+                            hypothesises.append(h_chain)
+                            contexts.append(context)
+                    for ans,_d in d['weakener_prediction'].items():
+                        for cot in _d["cot"]:
+                            h_chain = ReasoningSteps(line=cot["explanation"])
+                            hypothesises.append(h_chain)
+                            contexts.append(context)
+
         super().set_hypos(hypothesises)
         super().set_context(contexts)
         super().set_references(refs)
@@ -220,7 +262,7 @@ if __name__ == '__main__':
                 print(f"Score file for {filename} already exists. Skipping.")
             else:
                 print(f"Evaluating {os.path.join(root, filename)}")
-                evaluator.update_evaluator(os.path.join(root, filename))
+                evaluator.update_evaluator_custom(os.path.join(root, filename))
                 score_types = (
                     REASONING_SCORES
                     if "esnli" in filename or "gsm8k" in filename
