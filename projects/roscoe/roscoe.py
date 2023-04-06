@@ -16,7 +16,7 @@ from typing import List
 
 from nltk.tokenize import sent_tokenize
 
-from projects.roscoe.score import (
+from score import (
     SEQ_EMB_MODEL_TYPES,
     Chain,
     Evaluator,
@@ -24,7 +24,7 @@ from projects.roscoe.score import (
     UNSUPERVISED_SCORES,
     SENT_TRANS,
 )
-from projects.roscoe.utils import (
+from utils import (
     print_and_reset_max_gpu_memory,
     save_scores,
     split_gsm8k_gpt3_generations_to_steps,
@@ -36,7 +36,7 @@ DEFAULT_INPUT_PATH = f"./projects/roscoe/roscoe_data/generated/"
 DEFAULT_OUTPUT_PATH = f"./projects/roscoe/scores/"
 
 # DATASETS = ["drop", "esnli", "cosmos", "gsm8k", "semeval"]
-DATASETS = ["snli"]
+DATASETS = ["sampled_rationale","sampled_seed"]
 
 
 
@@ -120,34 +120,12 @@ class ReasoningEvaluator(Evaluator):
         refs = []
         with open(in_file) as _f:
             data = json.load(_f)
-            if "causal" in in_file:
+            if "sampled" in in_file:
                 for d in data:
-                    context = ReasoningSteps(line=d["Sentence1"]+" "+d["Sentence2"]+" "+d["Sentence3"]+" "+d['Sentence4'])
-                    for _d in d['cot_prediction']:
-                        h_chain = ReasoningSteps(line=_d["explanation"])
-                        hypothesises.append(h_chain)
-                        contexts.append(context)
-            elif "abductive" in in_file:
-                for d in data:
-                    context = ReasoningSteps(line=d["past_observation"]+" "+d["future_observation"])
-                    for _d in d['cot_prediction']:
-                        h_chain = ReasoningSteps(line=_d["explanation"])
-                        hypothesises.append(h_chain)
-                        contexts.append(context)
-            elif "snli" in in_file:
-                for d in data:
-                    context = ReasoningSteps(line=d["premise"]+" "+d["hypothesis"])
-                    keys = list(d.keys())
-                    for ans,_d in d['strengthener_prediction'].items():
-                        for cot in _d["cot"]:
-                            h_chain = ReasoningSteps(line=cot["explanation"])
-                            hypothesises.append(h_chain)
-                            contexts.append(context)
-                    for ans,_d in d['weakener_prediction'].items():
-                        for cot in _d["cot"]:
-                            h_chain = ReasoningSteps(line=cot["explanation"])
-                            hypothesises.append(h_chain)
-                            contexts.append(context)
+                    context = ReasoningSteps(line=d["source"])
+                    h_chain = ReasoningSteps(line=_d["rationale"])
+                    hypothesises.append(h_chain)
+                    contexts.append(context)
 
         super().set_hypos(hypothesises)
         super().set_context(contexts)

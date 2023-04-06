@@ -25,7 +25,7 @@ try:
 except ImportError:
     raise ImportError('Please run `pip install transformers`.')
 
-from projects.roscoe.utils import (
+from utils import (
     cosine_similarity_scaled,
     embedding_alignment,
     al_mean,
