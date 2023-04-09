@@ -121,9 +121,9 @@ class ReasoningEvaluator(Evaluator):
         with open(in_file) as _f:
             data = json.load(_f)
             if "sampled" in in_file:
-                for d in data:
+                for k,d in data.items():
                     context = ReasoningSteps(line=d["source"])
-                    h_chain = ReasoningSteps(line=_d["rationale"])
+                    h_chain = ReasoningSteps(line=d["rationale"])
                     hypothesises.append(h_chain)
                     contexts.append(context)
 
@@ -243,8 +243,8 @@ if __name__ == '__main__':
                 evaluator.update_evaluator_custom(os.path.join(root, filename))
                 score_types = (
                     REASONING_SCORES
-                    if "esnli" in filename or "gsm8k" in filename
-                    else UNSUPERVISED_SCORES
+                    # if "esnli" in filename or "gsm8k" in filename
+                    # else UNSUPERVISED_SCORES
                 )
                 score_types = [st for st in score_types if st in opt['scores']]
                 scores = evaluator.evaluate(score_types=score_types)

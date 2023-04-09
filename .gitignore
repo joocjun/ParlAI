@@ -148,3 +148,4 @@ _generated/
 
 # npm compilation
 parlai/crowdsourcing/**/package-lock.json
+.history
