@@ -36,7 +36,9 @@ DEFAULT_INPUT_PATH = f"./projects/roscoe/roscoe_data/generated/"
 DEFAULT_OUTPUT_PATH = f"./projects/roscoe/scores/"
 
 # DATASETS = ["drop", "esnli", "cosmos", "gsm8k", "semeval"]
-DATASETS = ["sampled_rationale","sampled_seed"]
+# DATASETS = ["sampled_rationale","sampled_seed"]
+DATASETS = ["sampled_cot"]
+
 
 
 
